@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Il tuo PAC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="format-detection" content="telephone=no">
+<style>
+/* Layout: app a schermo intero da telefono (max 430px, centrata su desktop), una cosa per schermata.
+   Quattro momenti approvati in Claude Design: costruisci il piano → rivelazione → carte evento → percorso e missioni.
+   Token canonici Appress OS (tema scuro workspace), alone radiale come unico ornamento. */
+:root{
+  --bg:#0b0820;--panel:rgba(18,14,40,.55);--recess:rgba(11,8,32,.6);--card:#161033;
+  --ink:#eceaf6;--ink2:#b3a9d6;--ink3:#8a80b0;--line:rgba(140,122,220,.16);--line2:rgba(140,122,220,.28);
+  --viola:#7c5cff;--viola3:#a48bff;--ciano:#22c3d6;--ok:#4ee39a;--warn:#e6a23c;--bad:#ef5d7a;--gold:#f0c419;--white:#fff;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,0,0,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+h1,h2{margin:0;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--ciano);outline-offset:3px;border-radius:8px}
+.num{font-variant-numeric:tabular-nums}
+.app{max-width:430px;min-height:100%;margin:0 auto;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.glow{position:absolute;border-radius:50%;pointer-events:none;transition:transform 1.2s var(--ease)}
+.screen{flex:1;display:flex;flex-direction:column;padding:18px max(22px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(22px,env(safe-area-inset-left,0px));position:relative;z-index:1;animation:in .38s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.round{width:44px;height:44px;border-radius:22px;border:1px solid var(--line2);background:var(--recess);display:grid;place-items:center;cursor:pointer;font-size:18px;flex:none}
+.round[hidden]{display:block!important;visibility:hidden}
+.xp{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--gold);border:1px solid rgba(240,196,25,.4);border-radius:999px;padding:6px 10px;white-space:nowrap}
+.xp.pop{animation:pop .5s var(--ease)}
+@keyframes pop{40%{transform:scale(1.25);background:rgba(240,196,25,.15)}}
+.dots{display:flex;gap:6px;align-items:center}
+.dots i{height:6px;border-radius:3px;width:6px;background:rgba(140,122,220,.35);transition:all .3s var(--ease)}
+.dots i.done{width:22px;background:var(--viola)}
+.dots i.now{width:22px;background:var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ciano)}
+.q{margin-top:44px;display:flex;flex-direction:column;gap:12px}
+.q h1{font-size:clamp(28px,8vw,34px);line-height:1.08}
+.q p.sub{font-size:15px;color:var(--ink2)}
+.bignum{margin-top:36px;text-align:center}
+.bignum b{font-size:clamp(64px,20vw,84px);font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.bignum b small{font-size:.38em;color:var(--ink3);margin-left:6px;font-weight:600}
+.bignum span{display:block;font-size:13px;color:var(--ink3);margin-top:6px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;margin-top:30px;background:linear-gradient(90deg,var(--viola) var(--p,30%),var(--recess) var(--p,30%));border:1px solid var(--line);outline-offset:10px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:var(--white);border:5px solid var(--viola);cursor:grab}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--white);border:5px solid var(--viola);cursor:grab}
+.minmax{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.chips{display:flex;gap:8px;margin-top:22px}
+.chips.wrap{flex-wrap:wrap}
+.chip{flex:1;min-height:46px;border-radius:14px;border:1px solid var(--line2);background:var(--panel);color:var(--ink2);font-size:14px;cursor:pointer;padding:0 10px;transition:all .2s var(--ease)}
+.chip[aria-pressed="true"]{border-color:var(--viola);background:rgba(124,92,255,.18);color:var(--ink);font-weight:600}
+.choices{display:grid;gap:10px;margin-top:30px}
+.choice{display:flex;flex-direction:column;gap:2px;text-align:left;padding:16px 18px;border-radius:18px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;transition:all .2s var(--ease)}
+.choice b{font-size:18px;font-weight:600}
+.choice span{font-size:14px;color:var(--ink2)}
+.choice[aria-pressed="true"]{border-color:var(--viola);background:rgba(124,92,255,.16)}
+.preview{margin-top:24px;display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:rgba(34,195,214,.08);border:1px solid rgba(34,195,214,.3);font-size:14px;line-height:1.35}
+.preview em{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ciano);white-space:nowrap}
+.preview b{color:var(--ink)}
+.cta{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:16px;border:0;background:var(--viola);color:var(--white);font-size:17px;font-weight:600;cursor:pointer;transition:transform .15s var(--ease)}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:var(--ink2);min-height:44px;font-size:15px;font-weight:500}
+.btn.line{background:transparent;border:1px solid var(--line2);color:var(--ink)}
+.row2{display:flex;gap:10px}.row2 .btn{flex:1;font-size:15px;min-height:52px}
+
+/* rivelazione */
+.reveal{margin-top:36px;text-align:center;display:flex;flex-direction:column;gap:8px}
+.reveal .lead{font-size:15px;color:var(--ink2)}
+.reveal .big{font-size:clamp(60px,18vw,76px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.reveal .small{font-size:13px;color:var(--ink3)}
+.bars{margin-top:32px;display:flex;align-items:flex-end;justify-content:center;gap:10px;height:230px}
+.bar{display:flex;flex-direction:column;align-items:center;gap:8px;width:72px}
+.bar b{font-size:14px;font-weight:600}
+.bar i{display:block;width:72px;border-radius:14px 14px 6px 6px;height:0;transition:height .9s var(--ease)}
+.bar span{font-size:12px;color:var(--ink2)}
+.rank{margin-top:24px;display:flex;gap:14px;align-items:center;padding:16px;border-radius:22px;background:var(--panel);border:1px solid var(--line)}
+.medal{width:52px;height:52px;border-radius:14px;background:rgba(240,196,25,.12);border:1px solid rgba(240,196,25,.45);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:18px;color:var(--gold);flex:none}
+.rank b{display:block;font-size:17px;font-weight:600}
+.rank span{font-size:13px;color:var(--ink2)}
+
+/* eventi */
+.meter{margin-top:18px;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:var(--recess);border:1px solid var(--line)}
+.meter span{font-size:13px;color:var(--ink2)}
+.meter b{font-size:22px}
+.delta{font-size:13px;font-weight:600;margin-left:8px}
+.deck{margin-top:26px;position:relative;height:min(470px,56vh);min-height:380px}
+.ghostcard{position:absolute;border-radius:26px;border:1px solid var(--line)}
+.ecard{position:absolute;inset:0;border-radius:26px;background:linear-gradient(180deg,#1c1640,#120e2a);border:1px solid rgba(164,139,255,.4);padding:26px 22px 22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 24px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.22);touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;transform:rotate(-2deg)}
+.ecard.fly{transition:transform .35s var(--ease),opacity .35s}
+.ecard .tag{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3)}
+.ecard .tag b{font-family:var(--mono);letter-spacing:.12em;color:var(--viola3);font-weight:700}
+.ecard h2{font-size:32px;line-height:1.05}
+.ecard p{font-size:15px;color:var(--ink2)}
+.ecard .imp{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:6px;font-size:14px}
+.ecard .imp div{display:flex;justify-content:space-between}
+.ecard .imp span{color:var(--ink2)}
+.stamp{position:absolute;top:22px;padding:4px 12px;border-radius:10px;border:2px solid;font-weight:700;font-size:15px;opacity:0;transition:opacity .15s}
+.stamp.yes{right:20px;color:var(--ok);border-color:var(--ok);transform:rotate(10deg)}
+.stamp.no{left:20px;color:var(--ink3);border-color:var(--ink3);transform:rotate(-10deg)}
+.choicebtns{display:flex;justify-content:center;align-items:center;gap:26px;margin-top:22px}
+.cb{width:68px;height:68px;border-radius:34px;border:1px solid var(--line2);background:rgba(18,14,40,.8);color:var(--ink2);font-size:13px;font-weight:600;cursor:pointer}
+.cb.yes{background:var(--viola);border-color:var(--viola);color:var(--white)}
+.cb.info{width:48px;height:48px;background:transparent;font-size:18px;font-weight:700}
+.hint{text-align:center;font-size:12px;color:var(--ink3);margin-top:12px}
+.explain{margin-top:8px;font-size:14px;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+
+/* missioni */
+.xpbar{height:6px;border-radius:3px;background:var(--recess);border:1px solid var(--line);overflow:hidden}
+.xpbar i{display:block;height:100%;background:var(--gold);transition:width .6s var(--ease)}
+.path{margin-top:14px;position:relative;display:flex;flex-direction:column}
+.path::before{content:"";position:absolute;left:21px;top:22px;bottom:22px;width:2px;background:rgba(140,122,220,.2)}
+.lvl{display:flex;gap:14px;align-items:center;padding:8px 0;position:relative}
+.lvl .n{width:44px;height:44px;border-radius:22px;background:var(--bg);border:1px solid rgba(140,122,220,.3);color:var(--ink3);display:grid;place-items:center;font-family:var(--mono);flex:none}
+.lvl.done .n{background:var(--ok);border-color:var(--ok);color:var(--bg);font-weight:700}
+.lvl.now{margin-left:-6px;padding:10px 12px 10px 6px;border-radius:16px;background:rgba(124,92,255,.14);border:1px solid rgba(124,92,255,.5)}
+.lvl.now .n{background:var(--viola);border-color:var(--viola);color:var(--white);font-weight:700;box-shadow:0 0 0 5px rgba(124,92,255,.22)}
+.lvl .t{flex:1;min-width:0}
+.lvl .t b{display:block;font-weight:600}
+.lvl .t small{font-size:13px;color:var(--ink3)}
+.lvl.now .t small{color:var(--ink2)}
+.lvl .r{font-size:14px;color:var(--ink3);white-space:nowrap}
+.lvl.now .r{font-size:16px;font-weight:700;color:var(--ink)}
+.mis{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(140,122,220,.12);cursor:pointer}
+.mis input{width:22px;height:22px;accent-color:var(--ok);margin:0;flex:none}
+.mis span{flex:1;font-size:15px}
+.mis:has(input:checked) span{color:var(--ink3);text-decoration:line-through}
+.mis em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--gold)}
+.scroll{overflow-y:auto}
+
+.sr{position:absolute;left:-9999px}
+.progress{flex:1;height:4px;border-radius:2px;background:rgba(140,122,220,.2);overflow:hidden;margin:0 6px}
+.progress i{display:block;height:100%;background:var(--viola);transition:width .4s var(--ease)}
+.lesson .q h1{font-size:clamp(28px,8vw,36px)}
+.pts{margin:26px 0 0;padding:0;list-style:none;counter-reset:p;display:grid;gap:16px}
+.pts li{counter-increment:p;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;font-size:16px;line-height:1.45}
+.pts li::before{content:counter(p);width:30px;height:30px;border-radius:15px;background:rgba(34,195,214,.12);border:1px solid rgba(34,195,214,.4);color:var(--ciano);display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:700}
+.quiz{margin-top:28px;padding:18px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
+.qq{font-weight:600;font-size:16px}
+.qopts{display:grid;gap:8px;margin-top:12px}
+.qo{min-height:46px;text-align:left;padding:10px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--recess);cursor:pointer;font-size:15px}
+.qo.right{border-color:var(--ok);background:rgba(78,227,154,.12)}
+.qo.wrong{border-color:var(--bad);background:rgba(239,93,122,.1)}
+.qo[disabled]{cursor:default}
+.why{margin-top:12px;font-size:14px;color:var(--ink2)}
+.why b{color:var(--ink)}
+.etfs{display:grid;gap:10px;margin-top:10px}
+.etf{padding:14px 16px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.etfh{display:flex;gap:10px;align-items:baseline}
+.etfh b{font-size:22px;color:var(--viola3);font-variant-numeric:tabular-nums}
+.etfh span{font-weight:600;line-height:1.25}
+.etf small{display:block;font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:4px}
+.etfm{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:13px;color:var(--ink2)}
+.note2{margin-top:12px;font-size:13px;color:var(--ink3);line-height:1.45}
+.note2 b{color:var(--ink)}
+.lessons{display:grid;gap:6px;margin-top:8px}
+.lesbtn{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-align:left;font-size:15px}
+.lesbtn em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--gold)}
+.multi-hint{margin-top:24px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.multi-hint+.choices{margin-top:10px}
+.choice.multi{position:relative;padding-right:52px}
+.choice.multi::after{content:"";position:absolute;right:18px;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:6px;border:1.5px solid var(--ink3)}
+.choice.multi[aria-pressed="true"]::after{background:var(--viola);border-color:var(--viola);box-shadow:inset 0 0 0 4px #1c1640}
+.tips{display:grid;gap:8px;margin-top:10px}
+.tip{display:grid;gap:2px;padding:12px 14px 12px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);position:relative}
+.tip::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:2px;background:var(--ciano)}
+.tip.w::before{background:var(--warn)}.tip.ok::before{background:var(--ok)}
+.tip b{font-size:15px;font-weight:600}
+.tip span{font-size:14px;color:var(--ink2);line-height:1.45}
+.homehero{margin-top:48px;display:flex;flex-direction:column;gap:14px}
+.homehero h1{font-size:clamp(48px,14vw,64px);line-height:1}
+.homehero h1 span{background:linear-gradient(90deg,var(--viola3),var(--ciano));-webkit-background-clip:text;background-clip:text;color:transparent}
+.homehero p{font-size:17px;color:var(--ink2);max-width:32ch}
+.paths{display:grid;gap:12px;margin-top:36px}
+.pathcard{display:flex;flex-direction:column;gap:4px;text-align:left;padding:20px;border-radius:22px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;transition:transform .15s var(--ease)}
+.pathcard:active{transform:scale(.98)}
+.pathcard em{font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ciano)}
+.pathcard b{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.pathcard span{font-size:14px;color:var(--ink2)}
+.pathcard.main{background:var(--viola);border-color:var(--viola)}
+.pathcard.main em{color:rgba(255,255,255,.8)}.pathcard.main span{color:rgba(255,255,255,.85)}
+.lesbtn.big{min-height:60px;padding:10px 14px}
+.lesbtn.big small{display:block;font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.08em}
+.app{overflow:clip}
+body{overflow-x:clip}
+.screen{align-items:stretch}
+.top{width:100%}
+.rise{animation:rise .5s var(--ease) both;animation-delay:calc(var(--i,0) * 55ms + 80ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.choice.tap{animation:tap .32s var(--ease)}
+@keyframes tap{40%{transform:scale(.97)}}
+.fxp{position:fixed;z-index:50;transform:translateX(-50%);font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gold);pointer-events:none;animation:fxp 1.1s var(--ease) forwards}
+@keyframes fxp{from{opacity:0;transform:translate(-50%,6px)}25%{opacity:1}to{opacity:0;transform:translate(-50%,-26px)}}
+.ecard{animation:deal .5s var(--ease) both}
+@keyframes deal{from{opacity:0;transform:translateY(60px) rotate(-9deg)}}
+.reveal .big{animation:glow 2.4s ease-in-out 1.4s infinite alternate}
+@keyframes glow{to{text-shadow:0 0 28px rgba(124,92,255,.55)}}
+.medal{animation:medal .7s cubic-bezier(.2,1.6,.4,1) .3s both}
+@keyframes medal{from{transform:scale(.4) rotate(-20deg);opacity:0}}
+.homehero h1 span{background-size:200% 100%;animation:shine 5s linear infinite}
+@keyframes shine{to{background-position:200% 0}}
+.homehero h1 span{background-image:linear-gradient(90deg,var(--viola3),var(--ciano),var(--viola3))}
+.lvl.now .n{animation:ping 2s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(124,92,255,.5)}100%{box-shadow:0 0 0 14px rgba(124,92,255,0)}}
+.path::before{transform-origin:top;animation:draw 1s var(--ease) both}
+@keyframes draw{from{transform:scaleY(0)}}
+.bignum b{display:inline-block;transition:transform .15s var(--ease)}
+.deck{margin-left:4px;margin-right:4px}
+.choicebtns,.hint{width:100%}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+  <div class="glow" id="g1" style="width:520px;height:520px;right:-260px;top:-200px;background:radial-gradient(circle,rgba(124,92,255,.28),rgba(124,92,255,0) 65%)"></div>
+  <div class="glow" id="g2" style="width:600px;height:600px;left:-300px;bottom:-320px;background:radial-gradient(circle,rgba(34,195,214,.12),rgba(34,195,214,0) 62%)"></div>
+  <main id="view" style="display:contents"></main>
+</div>
+
+<script>
+(function(){
+document.documentElement.lang="it";
+var REDUCE=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var Y0=new Date().getFullYear();
+function lget(k,d){try{var x=localStorage.getItem("pac4-"+k);return x?JSON.parse(x):d}catch(e){return d}}
+function lset(k,v){try{localStorage.setItem("pac4-"+k,JSON.stringify(v))}catch(e){}}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function eur(n){return Math.round(n).toLocaleString("it-IT")+" €"}
+function kk(n){return Math.abs(n)>=1e6?(n/1e6).toLocaleString("it-IT",{maximumFractionDigits:2})+" mln €":(Math.round(n/1000)*1000).toLocaleString("it-IT")+" €"}
+function pct(a,p){var i=(a.length-1)*p,f=Math.floor(i);return a[f]+(a[Math.min(f+1,a.length-1)]-a[f])*(i-f)}
+
+/* ---------- catalogo ETF (verificati su justETF, ottobre 2026; prezzi indicativi) ---------- */
+var ETF={
+ sp:{n:"Xtrackers S&P 500 UCITS ETF 4C",isin:"IE000Z9SJA06",ter:.03,px:13.4,r:.065,v:.17,tax:.26,what:"Le 500 maggiori aziende USA. Concentrato su un solo paese e sul dollaro."},
+ allw:{n:"Xtrackers FTSE All-World UCITS ETF 1C",isin:"IE000L6ZMMC4",ter:.07,px:9.6,r:.065,v:.155,tax:.26,what:"Circa 2.000 aziende di tutto il mondo, emergenti compresi. Nato nel 2026, ancora piccolo."},
+ world:{n:"Amundi Core MSCI World UCITS ETF Acc",isin:"IE000BI8OT95",ter:.12,px:165,r:.065,v:.16,tax:.26,what:"Circa 1.300 aziende dei paesi sviluppati. Molto grande; quota cara, si compra una quota ogni tanto."},
+ easia:{n:"Amundi MSCI EM Asia ESG Broad Transition Acc",isin:"LU1781541849",ter:.25,px:16.2,r:.07,v:.22,c:.65,tax:.26,what:"Asia emergente: TSMC, Samsung, SK hynix, Cina, India. Più crescita attesa, più rischio geopolitico."},
+ semi:{n:"iShares MSCI Global Semiconductors UCITS ETF Acc",isin:"IE000I8KRLL9",ter:.35,px:16.9,r:.075,v:.35,c:.8,tax:.26,what:"Solo produttori di chip. Tema forte e già caro: può perdere il 50-80% in una crisi."},
+ bond:{n:"Xtrackers II Eurozone Government Bond UCITS ETF 1C",isin:"LU0290355717",ter:.07,px:216,r:.03,v:.06,c:.1,tax:.125,what:"Titoli di Stato dell'area euro. Oscilla poco, rende meno; tassato al 12,5%."}
+};
+var SCENSHIFT={prudente:-.015,base:0,ottimista:.015};
+var RISK={basso:{core:"allw",sats:["bond"],w:40,scen:"prudente"},medio:{core:"sp",sats:["easia"],w:20,scen:"base"},alto:{core:"sp",sats:["semi","easia"],w:30,scen:"base"}};
+var FP={nessuno:{l:"Nessuno",r:0},negoziale:{l:"Fondo negoziale",r:.028},aperto:{l:"Fondo aperto",r:.022},pip:{l:"PIP assicurativo",r:.015}};
+var CRESC={ferma:[0,0],normale:[.8,.2],carriera:[1.5,.3]};
+
+var DEF={obiettivo:"entrambi",eta:33,etaPens:67,netto:1800,crescita:"normale",etaSvolta:50,spese:1200,risparmi:6000,mesiEmerg:6,debRata:0,debFine:Y0+2,
+  nFigli:0,primoFiglio:Y0+3,costoFiglio:300,assegno:75,casaOn:false,casaAnno:Y0+4,casaCash:30000,casaRata:400,casaDur:25,
+  rent:0,eredOn:false,eredAnno:Y0+19,eredRent:300,altriInv:0,
+  rata0:150,modoRata:"fasi",rataPlus:0,rischio:"medio",core:"sp",sats:["easia"],satW:20,scen:"base",infl:2,
+  fpTipo:"aperto",tfrDove:"fondo",fondoPos:0,volontari:0,inpsAnni:40,coef:5.0,prelievo:3.5,
+  crolloOn:false,crolloAnno:Y0+2,crolloPct:40,lavoroOn:false,lavoroAnno:Y0+5,lavoroMesi:6,promoOn:false,promoAnno:Y0+4,promoPct:15};
+var RANKS=[[0,"Salvadanaio"],[400,"Risparmiatore"],[800,"Investitore"],[1300,"Stratega"],[2000,"Leggenda del PAC"]];
+var MISSIONS=[["fondo","Completa il fondo emergenza",200],["etf","Controlla sul sito dell'emittente ISIN, costi e documento KID dei tuoi ETF",150],["pac","Attiva il PAC dal tuo broker, possibilmente senza commissioni",200],["inps","Controlla la pensione con «La mia pensione futura» sul sito INPS",150],["fp","Confronta l'ISC del tuo fondo pensione sul sito COVIP",150],["jan","Revisione annuale: rata +2% e controllo dei pesi",150],["hold","Supera un calo senza vendere",300]];
+
+var P=Object.assign(clone(DEF),lget("p",{}));if(P.sat!==undefined){P.sats=P.sat==="none"?[]:[P.sat];delete P.sat}
+var XP=lget("xp",0),DONE=lget("done",{}),SEEN=lget("seen",{}),QUIZ=lget("quiz",{});
+var st={screen:"home",q:lget("q",0),li:0,deck:[],di:0,info:false};
+
+/* ---------- motore ---------- */
+function kids(P){var k=[];for(var i=0;i<P.nFigli;i++)k.push(P.primoFiglio+3*i);return k}
+function phaseRata(P,y,inc0,inc){
+  var r=P.rata0;
+  if(P.modoRata==="stipendio")r=P.rata0*inc/inc0;
+  else if(P.modoRata==="fasi"){var ages=kids(P).map(function(b){return y-b}).filter(function(a){return a>=0&&a<=24});
+    if(ages.some(function(a){return a<=10}))r*=.8;else if(P.nFigli&&!ages.length&&y>kids(P)[0])r*=2;
+    if(P.debRata&&y>P.debFine)r+=P.debRata*.5}
+  return r+P.rataPlus}
+function cash(P){
+  var N=Math.max(1,P.etaPens-P.eta),rows=[],liq=P.risparmi,inc=P.netto*12,inc0=inc,K=kids(P),G=CRESC[P.crescita];
+  for(var t=0;t<N;t++){
+    var y=Y0+t,eta=P.eta+t;
+    if(t>0)inc*=1+(eta<=P.etaSvolta?G[0]:G[1])/100;
+    var promo=P.promoOn&&y>=P.promoAnno?1+P.promoPct/100:1,lav=P.lavoroOn&&y===P.lavoroAnno?P.netto*P.lavoroMesi:0;
+    var ages=K.map(function(b){return y-b}).filter(function(a){return a>=0});
+    var entr=inc*promo-lav+P.rent*12+(P.eredOn&&y>=P.eredAnno?P.eredRent*12:0)+P.assegno*12*ages.filter(function(a){return a<18}).length;
+    var casa=P.casaOn&&y>=P.casaAnno&&y<P.casaAnno+P.casaDur?P.casaRata*12:0;
+    var spese=P.spese*12+(y<=P.debFine?P.debRata*12:0)+P.costoFiglio*12*ages.filter(function(a){return a<=24}).length+casa+(P.fpTipo!=="nessuno"?P.volontari*12:0);
+    var sur=entr-spese;
+    if(P.casaOn&&y===P.casaAnno)liq-=P.casaCash;
+    var target=P.mesiEmerg*(spese/12)+(P.casaOn&&y<P.casaAnno?P.casaCash:0);
+    var toLiq=Math.min(Math.max(0,target-liq),Math.max(0,sur));liq+=toLiq;
+    var rata=phaseRata(P,y,inc0,inc);if(ages.some(function(a){return a===0}))rata=Math.max(0,rata-100);
+    var gap=rata*12-(sur-toLiq);if(gap>0)liq-=gap;
+    rows.push({y:y,rata:rata,liq:liq,ultimo:inc*promo/12,gap:gap/12,spese:spese/12});
+  }
+  return rows;
+}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function holdings(P){var h=[[P.core,P.sats.length?1-P.satW/100:1]];P.sats.forEach(function(k){h.push([k,P.satW/100/P.sats.length])});return h}
+function mc(P,rows,S){
+  var H=holdings(P),n=H.length,sh=SCENSHIFT[P.scen],infl=P.infl/100,N=rows.length;
+  var E=H.map(function(h){return ETF[h[0]]}),w=H.map(function(h){return h[1]});
+  var mu=E.map(function(e,i){return Math.log(1+e.r+(H[i][0]==="bond"?sh/3:sh))/12}),sd=E.map(function(e){return e.v/Math.sqrt(12)});
+  var rho=E.map(function(e,i){return i===0?1:e.c}),cm=E.map(function(e){return(e.ter/100+.002)/12});
+  var tax=E.reduce(function(a,e,i){return a+w[i]*e.tax},0),rnd=rng(20261021),fin=[],dds=[],vers=0;
+  function g(){var u=rnd()||1e-9,v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+  for(var s=0;s<S;s++){
+    var x=w.map(function(){return 0}),base=P.altriInv,peak=0,mdd=0;x[0]=P.altriInv;
+    for(var t=0;t<N;t++){
+      var rata=rows[t].rata*Math.pow(1+infl,t);
+      for(var m=0;m<12;m++){
+        var tot=rata,i2;for(i2=0;i2<n;i2++)tot+=x[i2];
+        var need=x.map(function(v,i){return Math.max(0,w[i]*tot-v)}),sn=need.reduce(function(a,b){return a+b},0)||1;
+        var Z=g(),v=0;
+        for(i2=0;i2<n;i2++){x[i2]+=rata*need[i2]/sn;var z=rho[i2]*Z+Math.sqrt(1-rho[i2]*rho[i2])*g();
+          x[i2]*=Math.exp(mu[i2]+sd[i2]*z)*(1-cm[i2]);
+          if(P.crolloOn&&rows[t].y===P.crolloAnno&&m===0&&H[i2][0]!=="bond")x[i2]*=1-P.crolloPct/100;
+          v+=x[i2]}
+        base+=rata;if(v>peak)peak=v;else if(peak>0&&v/peak-1<mdd)mdd=v/peak-1;
+      }
+    }
+    var vv=x.reduce(function(a,b){return a+b},0);fin.push((vv-Math.max(0,vv-base)*tax)/Math.pow(1+infl,N));dds.push(mdd);
+  }
+  rows.forEach(function(r){vers+=r.rata*12});
+  fin.sort(function(a,b){return a-b});dds.sort(function(a,b){return a-b});
+  return {p5:pct(fin,.05),p50:pct(fin,.5),p95:pct(fin,.95),vers:vers+P.altriInv,dd:pct(dds,.5)};
+}
+function irpefNet(l){var t=Math.min(l,28000)*.23+Math.max(0,Math.min(l,50000)-28000)*.33+Math.max(0,l-50000)*.43;
+  var d=l<=8500?1955:l<=28000?700+1255*(28000-l)/19500:l<50000?700*(50000-l)/22000:0;return l-Math.max(0,t-d)-l*.02}
+function plan(P,S){
+  var rows=cash(P),M=mc(P,rows,S||1500),ral0=P.netto*12*1.32,mont=0,ral,fp=P.fpTipo!=="nessuno"?P.fondoPos:0,tfr=0,rf=FP[P.fpTipo].r;
+  for(var a=P.etaPens-P.inpsAnni;a<P.etaPens;a++){
+    if(a<P.eta)ral=ral0*Math.pow(1+CRESC[P.crescita][0]/100,a-P.eta);
+    else{ral=rows[a-P.eta].ultimo*12*1.32;
+      if(P.fpTipo!=="nessuno"){fp=fp*(1+rf)+(P.tfrDove==="fondo"?.0691*ral:0)+P.volontari*12+(P.fpTipo==="negoziale"&&P.volontari>0?.015*ral:0)}
+      if(P.fpTipo==="nessuno"||P.tfrDove==="azienda")tfr+=.0691*ral}
+    mont=mont*1.007+.33*ral}
+  var inps=irpefNet(mont*P.coef/100)/12,yrs=P.etaPens-P.eta+3,ex=Math.max(.09,.15-.003*Math.max(0,yrs-15));
+  var fondo=fp*(1-ex*.9)*.047/12+tfr*(1-.23)*P.prelievo/100/12;
+  var rent=P.rent+(P.eredOn?P.eredRent:0),pac=M.p50*P.prelievo/100/12;
+  var parts=[["INPS",inps,"#7c5cff"],["PAC",pac,"#22c3d6"],[P.fpTipo==="nessuno"?"TFR":"Fondo",fondo,"#4ee39a"],["Affitti",rent,"#e6a23c"]];
+  var aliq=ral0>28000?.33:.23,dedu=Math.min(5300,P.volontari*12)*aliq;
+  return {tot:inps+pac+fondo+rent,low:inps*.82+fondo*.72+M.p5*P.prelievo/100/12+rent,parts:parts,M:M,ultimo:rows[rows.length-1].ultimo,rows:rows,dedu:dedu,fpCap:fp};
+}
+
+/* ---------- XP ---------- */
+function rankOf(x){var r=0;RANKS.forEach(function(z,i){if(x>=z[0])r=i});return r}
+function addXP(n,key){if(key){if(SEEN[key])return;SEEN[key]=1;lset("seen",SEEN)}XP=Math.max(0,XP+n);lset("xp",XP);floatXP(n);var e=document.getElementById("xp");if(e){e.textContent=XP+" XP";e.classList.remove("pop");void e.offsetWidth;e.classList.add("pop")}}
+function save(){lset("p",P);lset("screen",st.screen);lset("q",st.q)}
+
+/* ---------- percorso: domande e lezioni ---------- */
+function etfOpt(k){var e=ETF[k];return [k,e.n,e.what+" TER "+e.ter.toLocaleString("it-IT")+"% · "+e.isin]}
+var STEPS=[
+ {k:"obiettivo",tag:"Il tuo obiettivo",q:"Perché vuoi investire?",sub:"Cambia cosa ti mostriamo alla fine.",type:"choice",opts:[["pensione","Integrare la pensione","Una rendita in più quando smetti di lavorare"],["capitale","Proteggere i risparmi","Un capitale che non perde valore con l'inflazione"],["entrambi","Tutte e due","Un capitale da usare e una rendita futura"]]},
+ {L:"pac",t:"Cos'è un PAC",pts:["Un Piano di Accumulo del Capitale: versi una cifra fissa ogni mese, in automatico.","Compri sia quando i prezzi sono alti sia quando sono bassi: nei mesi di calo le stesse cifre comprano più quote.","Non serve indovinare il momento giusto: conta il tempo che resti investito."],quiz:{q:"100 € al mese per 30 anni, al 6% l'anno. Quanto diventano, prima delle tasse?",o:["36.000 €","Circa 100.000 €","Circa 200.000 €"],a:1,why:"Versi 36.000 €, ma gli interessi producono altri interessi: è l'interesse composto. Il guadagno pesa più del versato."}},
+ {k:"eta",tag:"Chi sei",q:"Quanti anni hai?",sub:"Il piano parte da oggi.",type:"range",min:18,max:64,step:1,unit:"anni"},
+ {k:"etaPens",tag:"L'orizzonte",q:"Fino a che età vuoi il prospetto?",sub:"Di solito l'età della pensione: in Italia oggi è 67 anni.",type:"range",min:40,max:75,step:1,unit:"anni",chips:[60,65,67]},
+ {k:"netto",tag:"Il lavoro",q:"Quanto guadagni al mese, netto?",sub:"Media mensile, con tredicesima e quattordicesima comprese.",type:"range",min:600,max:6000,step:50,unit:"€",chips:[1300,1800,2500]},
+ {k:"crescita",tag:"Il lavoro",q:"Come immagini la tua carriera?",sub:"Quanto crescerà lo stipendio oltre l'inflazione.",type:"choice",opts:[["ferma","Stabile","Cresce solo con l'inflazione"],["normale","Normale","Scatti e anzianità, circa +0,8% l'anno"],["carriera","In crescita","Promozioni ed esperienza, circa +1,5% l'anno"]]},
+ {L:"infl",t:"Inflazione e potere d'acquisto",pts:["L'inflazione fa salire i prezzi: con il 2% l'anno, in 35 anni tutto costa circa il doppio.","Per questo in tutta l'app i risultati sono «in euro di oggi»: quanto potrai comprare davvero.","I soldi fermi sul conto perdono valore ogni anno. Investire serve prima di tutto a non perderlo."],quiz:{q:"Con il 2% di inflazione, 1.000 € tra 35 anni comprano quanto oggi…",o:["1.000 €","Circa 500 €","Circa 800 €"],a:1,why:"I prezzi raddoppiano circa ogni 35 anni al 2%: la stessa banconota compra la metà."}},
+ {k:"spese",tag:"Le spese",q:"Quanto spendi al mese, tutto compreso?",sub:"La tua parte di casa, spesa, bollette, auto, svago. Esclusi rate di prestiti e figli.",type:"range",min:300,max:5000,step:50,unit:"€",chips:[900,1200,1800]},
+ {L:"emerg",t:"Il fondo emergenza",pts:["Prima di investire, metti da parte da 3 a 6 mesi di spese su un conto.","Serve per imprevisti: auto rotta, lavoro perso, spese mediche.","Così non sei costretto a vendere gli investimenti proprio quando sono scesi."],quiz:{q:"Perché il fondo emergenza resta fuori dal PAC?",o:["Rende di più","Serve subito e non deve oscillare","Paga meno tasse"],a:1,why:"Un imprevisto durante un crollo ti costringerebbe a vendere in perdita."}},
+ {k:"risparmi",tag:"I risparmi",q:"Quanto hai già da parte?",sub:"Liquidità su conti e depositi.",type:"range",min:0,max:100000,step:500,unit:"€",chips:[2000,6000,20000]},
+ {k:"debRata",tag:"I debiti",q:"Hai rate da pagare ogni mese?",sub:"Auto, prestiti, mutuo. Metti 0 se non ne hai.",type:"range",min:0,max:1500,step:25,unit:"€/mese",chips:[0,300,600]},
+ {k:"debFine",tag:"I debiti",q:"In che anno finiscono le rate?",sub:"Quando finiscono, parte di quella cifra può andare nel PAC.",type:"range",min:Y0,max:Y0+30,step:1,unit:"",skip:function(P){return !P.debRata}},
+ {k:"nFigli",tag:"La famiglia",q:"Quanti figli hai o immagini?",sub:"Cambiano le spese e le fasi del piano.",type:"choice",opts:[[0,"Nessuno","Più margine per investire"],[1,"Uno",""],[2,"Due","A tre anni di distanza"],[3,"Tre","A tre anni di distanza"]]},
+ {k:"primoFiglio",tag:"La famiglia",q:"In che anno nasce il primo?",sub:"Se c'è già, metti l'anno di nascita.",type:"range",min:Y0-20,max:Y0+15,step:1,unit:"",skip:function(P){return !P.nFigli}},
+ {k:"costoFiglio",tag:"La famiglia",q:"Quanto costa ogni figlio a te, al mese?",sub:"La tua quota. In Italia la stima media è intorno ai 700 € al mese per figlio, per tutta la famiglia.",type:"range",min:100,max:1000,step:25,unit:"€",chips:[300,450,600],skip:function(P){return !P.nFigli}},
+ {k:"rent",tag:"Le rendite",q:"Hai affitti o altre rendite?",sub:"Quanto ti entra al mese, netto, per la tua parte. 0 se niente.",type:"range",min:0,max:3000,step:25,unit:"€/mese",chips:[0,250,500]},
+ {k:"altriInv",tag:"Gli investimenti",q:"Hai già altri investimenti?",sub:"Azioni, ETF, BTP, polizze o PAC in banca. Li sommiamo al capitale di partenza.",type:"range",min:0,max:200000,step:1000,unit:"€",chips:[0,5000,20000]},
+ {L:"fondo",t:"Fondo pensione e TFR",pts:["Il TFR è la liquidazione: ogni anno circa il 6,9% del tuo stipendio lordo. Puoi lasciarlo in azienda o versarlo in un fondo pensione.","I versamenti volontari al fondo si deducono dalle tasse fino a 5.300 € l'anno (dal 2026): lo Stato ti restituisce dal 23% al 43% di quello che versi.","In uscita paghi dal 15% al 9%, meno degli investimenti normali. I costi però cambiano molto: fondi negoziali bassi, polizze PIP spesso alte."],quiz:{q:"Versi 1.000 € l'anno nel fondo e la tua aliquota è il 33%. Quanto ti torna in tasse?",o:["Niente","330 €","1.000 €"],a:1,why:"La deduzione abbassa il reddito tassato: con l'aliquota al 33% risparmi 330 € su 1.000 € versati."}},
+ {k:"fpTipo",tag:"La previdenza",q:"Hai un fondo pensione o un piano previdenziale?",sub:"Se non sai quale, guarda il nome sul documento o chiedi in busta paga.",type:"choice",opts:[["nessuno","Nessuno","Il TFR resta in azienda"],["negoziale","Fondo negoziale","Quello del tuo contratto di lavoro: costi bassi"],["aperto","Fondo aperto","Gestito da banca o compagnia"],["pip","PIP assicurativo","Polizza previdenziale: spesso costi alti"]]},
+ {k:"tfrDove",tag:"La previdenza",q:"Dove va il tuo TFR?",sub:"",type:"choice",opts:[["fondo","Nel fondo pensione","Cresce investito"],["azienda","In azienda","Si rivaluta poco più dell'inflazione"]],skip:function(P){return P.fpTipo==="nessuno"}},
+ {k:"fondoPos",tag:"La previdenza",q:"Quanto c'è oggi nel fondo?",sub:"Lo trovi nell'estratto conto annuale o nell'area riservata.",type:"range",min:0,max:150000,step:500,unit:"€",chips:[0,4000,20000],skip:function(P){return P.fpTipo==="nessuno"}},
+ {k:"volontari",tag:"La previdenza",q:"Versi qualcosa di tuo nel fondo?",sub:"Oltre al TFR. Nei fondi negoziali fa scattare anche il contributo del datore di lavoro.",type:"range",min:0,max:440,step:10,unit:"€/mese",chips:[0,50,100],skip:function(P){return P.fpTipo==="nessuno"}},
+ {k:"inpsAnni",tag:"La pensione",q:"Quanti anni di contributi avrai?",sub:"In tutta la carriera, anche quelli passati. Con buchi o part-time, mettine meno.",type:"range",min:10,max:46,step:1,unit:"anni",chips:[30,38,42]},
+ {L:"rischio",t:"Rischio e tempo",pts:["Le azioni nel lungo periodo hanno battuto l'inflazione, ma lungo la strada possono perdere il 30-50% in pochi mesi.","Più lungo è l'orizzonte, più il tempo assorbe i cali. Sotto i 5 anni le azioni sono una scommessa.","Il vero rischio è vendere durante un crollo: si rende definitiva una perdita che era solo sulla carta."],quiz:{q:"Il mercato scende del 35%. Cosa conviene fare in un PAC lungo?",o:["Vendere tutto","Sospendere","Continuare a versare"],a:2,why:"Le rate comprano più quote a prezzo basso: quando i prezzi risalgono, quelle quote rendono di più."}},
+ {k:"rischio",tag:"Il rischio",q:"Quanto rischio sopporti?",sub:"Scegliamo noi un portafoglio di partenza; nei passi dopo puoi cambiarlo.",type:"choice",opts:[["basso","Basso","60% azioni mondiali, 40% titoli di Stato. Cali più piccoli"],["medio","Medio","80% S&P 500, 20% Asia emergente. Il classico"],["alto","Alto","70% S&P 500, 30% semiconduttori. Molte oscillazioni"]],after:function(P){var r=RISK[P.rischio];P.core=r.core;P.sats=r.sats.slice();P.satW=r.w;P.scen=r.scen}},
+ {L:"etf",t:"Cos'è un ETF",pts:["Un fondo quotato in Borsa che copia un indice: con una sola quota compri centinaia di aziende.","Ad accumulazione reinveste i dividendi da solo: per un PAC lungo è la scelta più efficiente.","Il costo annuo si chiama TER: 0,07% su 10.000 € sono 7 € l'anno. Scegli ETF «UCITS», cioè conformi alle regole europee."],quiz:{q:"Un ETF con TER 0,03% e 10.000 € investiti. Quanto costa l'anno?",o:["3 €","30 €","300 €"],a:0,why:"0,03% di 10.000 € = 3 €. Un fondo attivo in banca può costare 150-200 € l'anno sulla stessa cifra."}},
+ {k:"core",tag:"Scegli i tuoi ETF · 1",q:"Dove vuoi investire la parte principale?",sub:"È il «core»: la parte grande e stabile del PAC. Ti abbiamo già proposto quella adatta al tuo rischio.",type:"choice",opts:[["allw","Tutto il mondo","Circa 2.000 aziende, emergenti comprese: la scelta più diversificata. "+ETF.allw.n+" · TER 0,07%"],["world","I paesi sviluppati","Circa 1.300 aziende: USA, Europa, Giappone. "+ETF.world.n+" · TER 0,12%, quota cara"],["sp","Solo gli Stati Uniti","Le 500 più grandi: storicamente forti, ma un solo paese. "+ETF.sp.n+" · TER 0,03%"]]},
+ {L:"sat",t:"Core e satellite",pts:["Il core è un indice ampio, la base del portafoglio. Il satellite è una quota piccola su un'area o un tema.","Gli ETF tematici in media rendono meno del mercato: gli studi stimano circa 3 punti l'anno in meno, perché nascono quando il tema è già caro.","Tieni il satellite tra il 10% e il 20%: se va male il danno è limitato."],quiz:{q:"Perché il satellite resta piccolo?",o:["Costa di più","Se il tema delude, pesa poco","Si può comprare solo in piccole quote"],a:1,why:"Un tema può perdere il 50-80%: con il 20% del portafoglio è un colpo sopportabile."}},
+ {k:"sats",tag:"Scegli i tuoi ETF · 2",q:"Vuoi aggiungere qualcosa?",sub:"Anche più di una, oppure niente. Ogni scelta è un ETF in più da seguire.",type:"multi",opts:[["easia","Crescita dell'Asia","Chip e tecnologia di Taiwan, Corea, Cina, India. "+ETF.easia.n+" · TER 0,25%"],["semi","Tecnologia e chip","Il tema dell'intelligenza artificiale: molto rischioso. "+ETF.semi.n+" · TER 0,35%"],["bond","Più stabilità","Titoli di Stato dell'area euro: attutiscono i crolli. "+ETF.bond.n+" · TER 0,07%"]]},
+ {k:"satW",tag:"Scegli i tuoi ETF · 3",q:"Quanto pesa la parte extra?",sub:"Divisa in parti uguali tra quello che hai aggiunto. Il resto va sulla parte principale.",type:"range",min:5,max:50,step:5,unit:"%",chips:[10,20,30],skip:function(P){return !P.sats.length}},
+ {k:"scen",tag:"I mercati",q:"Che rendimenti ti aspetti?",sub:"Nessuno lo sa: scegli lo scenario con cui ti senti a tuo agio.",type:"choice",opts:[["prudente","Prudente","Mercati sotto la media storica"],["base","Realista","La media che ci si aspetta oggi"],["ottimista","Ottimista","Come negli anni migliori"]]},
+ {k:"rata0",tag:"Il PAC",q:"Quanto puoi mettere nel PAC ogni mese?",sub:"Quello che resta dopo spese, rate e fondo emergenza.",type:"range",min:25,max:2000,step:25,unit:"€",chips:[100,150,300]},
+ {k:"modoRata",tag:"Il PAC",q:"Come vuoi far crescere la rata?",sub:"Ogni anno sale comunque con l'inflazione.",type:"choice",opts:[["fissa","Fissa","Stessa cifra, in euro di oggi"],["stipendio","Con lo stipendio","Sale quando sale lo stipendio"],["fasi","Con le fasi della vita","Scende con i figli piccoli, sale quando finiscono rate e figli"]]},
+ {L:"tasse",t:"Tasse e manutenzione",pts:["Sugli ETF paghi il 26% sul guadagno solo quando vendi; sulla parte in titoli di Stato il 12,5%. Ogni anno c'è un bollo dello 0,2%.","Se un ETF perde, quella perdita non si può compensare con i guadagni di altri ETF: meglio non vendere senza motivo.","Per tenere i pesi giusti non vendere: sposta i nuovi versamenti sull'ETF rimasto indietro."],quiz:{q:"Il satellite è salito troppo e pesa il 28%. Come lo riporti al 20%?",o:["Vendo una parte","Verso tutto sul core per qualche mese","Lo lascio così"],a:1,why:"Così ribilanci senza vendere e senza pagare il 26% sui guadagni."}}
+];
+var LESSONS=STEPS.filter(function(S){return S.L});
+function steps(){return STEPS.filter(function(S){return !S.L&&(!S.skip||!S.skip(P))})}
+var pvT=null;
+function schedulePreview(){clearTimeout(pvT);pvT=setTimeout(function(){var R=plan(P,400),e=document.getElementById("pv");if(!e)return;
+  e.innerHTML=P.obiettivo==="capitale"?'<em>ANTEPRIMA</em><span>A '+P.etaPens+' anni il PAC varrebbe circa <b>'+kk(R.M.p50)+'</b>, in euro di oggi.</span>':'<em>ANTEPRIMA</em><span>A '+P.etaPens+' anni avresti circa <b>'+eur(R.tot)+'</b> al mese, in euro di oggi.</span>'},150)}
+
+var view=document.getElementById("view");
+function animateIn(){
+  if(REDUCE)return;
+  view.querySelectorAll(".choices,.pts,.lessons,.tips,.etfs,.path,.paths,.qopts,.chips").forEach(function(g){
+    Array.prototype.forEach.call(g.children,function(el,i){el.style.setProperty("--i",i);el.classList.add("rise")})});
+}
+function floatXP(n){if(REDUCE||n<=0)return;var x=document.getElementById("xp");if(!x)return;var r=x.getBoundingClientRect(),f=document.createElement("div");
+  f.className="fxp";f.textContent="+"+n+" XP";f.style.left=(r.left+r.width/2)+"px";f.style.top=(r.bottom+6)+"px";document.body.appendChild(f);setTimeout(function(){f.remove()},1100)}
+function render(){var app=document.getElementById("app");app.scrollLeft=0;({home:rHome,learn:rLearn,lesson:rLessonScreen,q:rQ,reveal:rReveal,eventi:rEventi,missioni:rMissioni})[st.screen]();save();window.scrollTo(0,0);animateIn();
+  var sh={home:0,learn:1,lesson:1,q:0,reveal:1,eventi:2,missioni:3}[st.screen];
+  document.getElementById("g1").style.transform="translate("+(-sh*60)+"px,"+(sh*90)+"px)";document.getElementById("g2").style.transform="translate("+(sh*50)+"px,"+(-sh*70)+"px)"}
+function topbar(left,mid){return '<div class="top">'+left+mid+'<span class="xp num" id="xp">'+XP+' XP</span></div>'}
+function dotsFor(L){var cur=st.q;return '<div class="progress" aria-label="Passo '+(cur+1)+' di '+L.length+'"><i style="width:'+((cur+1)/L.length*100)+'%"></i></div>'}
+
+function rQ(){
+  var L=steps();if(st.q>=L.length)st.q=L.length-1;var S=L[st.q];
+  var v=P[S.k],body="";
+  if(S.type==="range"){
+    body='<div class="bignum"><b class="num" id="bv">'+v.toLocaleString("it-IT")+'<small>'+S.unit+'</small></b></div>'+
+      '<label for="rg" class="sr">'+S.q+'</label><input type="range" id="rg" min="'+S.min+'" max="'+S.max+'" step="'+S.step+'" value="'+v+'">'+
+      '<div class="minmax"><span>'+S.min.toLocaleString("it-IT")+' '+S.unit+'</span><span>'+S.max.toLocaleString("it-IT")+' '+S.unit+'</span></div>'+
+      (S.chips?'<div class="chips">'+S.chips.map(function(c){return '<button type="button" class="chip" data-c="'+c+'" aria-pressed="'+(v===c)+'">'+c.toLocaleString("it-IT")+' '+S.unit+'</button>'}).join("")+'</div>':"");
+  }else{
+    var on=function(o){return S.type==="multi"?v.indexOf(o)>=0:v===o};
+    body=(S.type==="multi"?'<p class="multi-hint">Scelta multipla</p>':'')+'<div class="choices">'+S.opts.map(function(o){return '<button type="button" class="choice'+(S.type==="multi"?" multi":"")+'" data-o="'+o[0]+'" aria-pressed="'+on(o[0])+'"><b>'+o[1]+'</b>'+(o[2]?'<span>'+o[2]+'</span>':"")+'</button>'}).join("")+'</div>';
+  }
+  view.innerHTML='<section class="screen">'+topbar('<button type="button" class="round" id="back" aria-label="'+(st.q?"Passo precedente":"Torna all&#39;inizio")+'">←</button>',dotsFor(L))+
+    '<div class="q"><p class="eyebrow">'+S.tag+'</p><h1>'+S.q+'</h1>'+(S.sub?'<p class="sub">'+S.sub+'</p>':"")+'</div>'+body+
+    (st.q?'<div class="preview" id="pv"><em>ANTEPRIMA</em><span>Calcolo…</span></div>':'')+
+    '<div class="cta"><button type="button" class="btn" id="next">'+(st.q<L.length-1?"Avanti · +20 XP":"Scopri il tuo piano")+'</button></div></section>';
+  var rg=document.getElementById("rg");
+  function fill(){if(rg)rg.style.setProperty("--p",((rg.value-S.min)/(S.max-S.min)*100)+"%")}
+  if(rg){fill();rg.oninput=function(){P[S.k]=+rg.value;document.getElementById("bv").innerHTML=(+rg.value).toLocaleString("it-IT")+'<small>'+S.unit+'</small>';fill();
+    view.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed",+c.dataset.c===P[S.k])});schedulePreview()}}
+  view.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){rg.value=c.dataset.c;rg.oninput()}});
+  view.querySelectorAll(".choice").forEach(function(c){c.onclick=function(){var val=S.opts.filter(function(x){return String(x[0])===c.dataset.o})[0][0];
+    if(S.type==="multi"){var a=P[S.k].slice(),ix=a.indexOf(val);if(ix>=0)a.splice(ix,1);else a.push(val);P[S.k]=a;c.setAttribute("aria-pressed",ix<0)}
+    else{P[S.k]=val;view.querySelectorAll(".choice").forEach(function(x){x.setAttribute("aria-pressed",x===c)})}c.classList.remove("tap");void c.offsetWidth;c.classList.add("tap");schedulePreview()}});
+  document.getElementById("back").onclick=function(){if(st.q)st.q--;else st.screen="home";render()};
+  document.getElementById("next").onclick=function(){if(S.after)S.after(P);addXP(20,"q-"+S.k);next()};
+  if(st.q)schedulePreview();
+}
+function next(){if(st.q<steps().length-1){st.q++;render()}else{st.screen="reveal";render()}}
+function rHome(){
+  var done=lget("planDone",false),nl=LESSONS.filter(function(l){return QUIZ[l.L]!=null}).length;
+  view.innerHTML='<section class="screen home">'+topbar('<span class="eyebrow">Piano d&#39;accumulo</span>','')+
+    '<div class="homehero"><h1>Il tuo <span>PAC</span></h1><p>Costruisci un piano per far crescere i tuoi risparmi e integrare la pensione. Oppure parti dalle basi.</p></div>'+
+    '<div class="paths">'+
+    '<button type="button" class="pathcard main" id="build"><em>'+(done?"Riprendi":"Inizia")+'</em><b>Costruisci il tuo piano</b><span>'+steps().length+' domande · circa 5 minuti</span></button>'+
+    '<button type="button" class="pathcard" id="learn"><em>'+nl+' di '+LESSONS.length+' completate</em><b>Impara le basi</b><span>'+LESSONS.length+' lezioni da un minuto, con quiz e XP</span></button>'+
+    (done?'<button type="button" class="pathcard" id="mine"><em>Pronto</em><b>Il mio piano</b><span>Risultato, portafoglio, consigli ed eventi</span></button>':'')+
+    '</div><p class="note2" style="margin-top:auto;padding-top:24px">Stime basate su simulazioni, non consulenza finanziaria personalizzata.</p></section>';
+  document.getElementById("build").onclick=function(){st.screen="q";render()};
+  document.getElementById("learn").onclick=function(){st.screen="learn";render()};
+  if(done)document.getElementById("mine").onclick=function(){st.screen="reveal";render()};
+}
+function rLearn(){
+  view.innerHTML='<section class="screen">'+topbar('<button type="button" class="round" id="back" aria-label="Torna all&#39;inizio">←</button>','<span class="eyebrow">Impara le basi</span>')+
+    '<div class="q"><h1>Otto idee per scegliere bene</h1><p class="sub">Un minuto ciascuna. Rispondi alla domanda finale per guadagnare XP.</p></div>'+
+    '<div class="lessons" style="margin-top:24px">'+LESSONS.map(function(l,i){var a=QUIZ[l.L],ok=a!=null&&a===l.quiz.a;return '<button type="button" class="lesbtn big" data-i="'+i+'"><span><small>Lezione '+(i+1)+'</small>'+l.t+'</span><em>'+(a==null?"+30 XP":ok?"✓":"fatta")+'</em></button>'}).join("")+'</div>'+
+    '<div class="cta"><button type="button" class="btn" id="build">Costruisci il tuo piano</button></div></section>';
+  document.getElementById("back").onclick=function(){st.screen="home";render()};
+  document.getElementById("build").onclick=function(){st.screen="q";render()};
+  view.querySelectorAll(".lesbtn").forEach(function(b){b.onclick=function(){st.li=+b.dataset.i;st.screen="lesson";render()}});
+}
+function rLessonScreen(){
+  var S=LESSONS[st.li],ans=QUIZ[S.L],last=st.li===LESSONS.length-1;
+  view.innerHTML='<section class="screen lesson">'+topbar('<button type="button" class="round" id="back" aria-label="Torna alle lezioni">←</button>','<div class="progress" aria-label="Lezione '+(st.li+1)+' di '+LESSONS.length+'"><i style="width:'+((st.li+1)/LESSONS.length*100)+'%"></i></div>')+
+    '<div class="q"><p class="eyebrow">Lezione '+(st.li+1)+' · un minuto</p><h1>'+S.t+'</h1></div>'+
+    '<ol class="pts">'+S.pts.map(function(p){return '<li>'+p+'</li>'}).join("")+'</ol>'+
+    '<div class="quiz"><p class="qq">'+S.quiz.q+'</p><div class="qopts">'+S.quiz.o.map(function(o,i){var c=ans==null?"":(i===S.quiz.a?" right":(i===ans?" wrong":""));return '<button type="button" class="qo'+c+'" data-i="'+i+'"'+(ans!=null?" disabled":"")+'>'+o+'</button>'}).join("")+'</div>'+
+    (ans!=null?'<p class="why"><b>'+(ans===S.quiz.a?"Giusto · +30 XP":"Quasi")+'</b> '+S.quiz.why+'</p>':"")+'</div>'+
+    '<div class="cta"><button type="button" class="btn" id="next">'+(last?"Torna alle lezioni":"Lezione successiva")+'</button></div></section>';
+  view.querySelectorAll(".qo").forEach(function(b){b.onclick=function(){if(QUIZ[S.L]!=null)return;var i=+b.dataset.i;QUIZ[S.L]=i;lset("quiz",QUIZ);if(i===S.quiz.a)addXP(30,"l-"+S.L);rLessonScreen()}});
+  document.getElementById("back").onclick=function(){st.screen="learn";render()};
+  document.getElementById("next").onclick=function(){if(last)st.screen="learn";else st.li++;render()};
+}
+
+function advice(P,R){
+  var out=[],H=holdings(P),rows=R.rows,yrs=rows.length,first=rows[0],full=rows.filter(function(x){return x.liq>=P.mesiEmerg*x.spese-1})[0];
+  if(!full||full.y>Y0)out.push(["w","Prima il fondo emergenza","Ti mancano "+eur(Math.max(0,P.mesiEmerg*first.spese-P.risparmi))+" per avere "+P.mesiEmerg+" mesi di spese da parte. Finché non ci sei, tieni la rata bassa."]);
+  else if(P.risparmi>P.mesiEmerg*first.spese*2)out.push(["i","Hai più liquidità del necessario","Oltre il fondo emergenza hai circa "+eur(P.risparmi-P.mesiEmerg*first.spese)+". Puoi investirne una parte un po' al mese, nei prossimi 12 mesi, invece che tutta subito."]);
+  if(P.rata0<100&&H.length>1)out.push(["w","Con meno di 100 € basta un ETF","Con rate piccole le quote intere di due ETF si comprano lentamente. Parti con la sola parte principale e aggiungi il resto quando la rata sale."]);
+  H.forEach(function(h){var e=ETF[h[0]],m=P.rata0*h[1];if(m>0&&m<e.px)out.push(["i","Una quota ogni "+Math.ceil(e.px/m)+" mesi",e.n+" costa circa "+e.px.toLocaleString("it-IT")+" € a quota e tu ci metti "+eur(m)+" al mese: la cifra si accumula finché non basta."])});
+  if(P.rata0>=500&&H.length<3)out.push(["ok","Con "+eur(P.rata0)+" al mese puoi diversificare di più","Puoi permetterti 3 ETF: la parte principale, un'area in crescita e una quota di titoli di Stato che attutisce i crolli. Oltre 3 ETF il beneficio è minimo e la gestione si complica."]);
+  if(P.core==="sp"&&!P.sats.some(function(k){return k==="easia"}))out.push(["i","Tutto su un solo paese","L'S&P 500 è solo USA e in dollari. Se vuoi meno dipendenza da un paese, valuta un indice mondiale come parte principale."]);
+  if(P.sats.length&&P.satW*P.sats.filter(function(k){return k!=="bond"}).length/P.sats.length>25)out.push(["w","La parte extra è alta","Oltre il 20-25% su temi o aree singole, i crolli pesano molto sul totale. Gli ETF tematici in media rendono meno del mercato."]);
+  if(yrs<10&&P.sats.indexOf("bond")<0)out.push(["w","Orizzonte corto","Con meno di 10 anni un crollo può non fare in tempo a recuperare. Aggiungi titoli di Stato per stare più tranquillo."]);
+  if(P.eta>=50&&P.sats.indexOf("bond")<0)out.push(["i","Avvicinandoti al traguardo","Molti spostano gradualmente una parte su titoli di Stato negli ultimi 10 anni, per non arrivare alla pensione nel mezzo di un crollo."]);
+  if(P.fpTipo==="pip")out.push(["w","Controlla i costi del PIP","Le polizze previdenziali costano spesso l'1,5-2,5% l'anno. Confronta il loro ISC con quello del fondo negoziale del tuo contratto sul sito COVIP."]);
+  if(P.fpTipo==="negoziale"&&!P.volontari)out.push(["ok","Non perdere il contributo del datore","Nei fondi negoziali, se versi anche una piccola quota tua (spesso l'1-2% dello stipendio), il datore di lavoro aggiunge la sua. Sono soldi in più a costo zero."]);
+  if(P.fpTipo==="nessuno")out.push(["i","Il TFR può lavorare di più","Lasciato in azienda si rivaluta poco più dell'inflazione. In un fondo pensione a costi bassi cresce investito e in uscita è tassato dal 15% al 9%."]);
+  if(P.fpTipo!=="nessuno"&&P.volontari*12<5300&&P.netto>=1300){var aliq=P.netto*12*1.32>28000?.33:.23;out.push(["ok","Lo sconto fiscale del fondo","Ogni 100 € al mese versati nel fondo ti fanno risparmiare circa "+eur(1200*aliq)+" di tasse l'anno, fino a 5.300 € di versamenti."])}
+  if(rows.some(function(x){return x.gap>1}))out.push(["w","In alcuni anni la rata non ci sta","Nel "+rows.filter(function(x){return x.gap>1})[0].y+" la rata supera quello che ti avanza. Va bene per poco, ma i risparmi scendono: riduci la rata in quella fase."]);
+  out.push(["i","Non vendere nei crolli","Nel tuo piano un calo tipico lungo la strada è del "+Math.round(-R.M.dd*100)+"%. Continuare a versare in quei mesi è la mossa che rende di più."]);
+  return out.slice(0,7);
+}
+function rReveal(){
+  var R=plan(P,2000),r=rankOf(XP),H=holdings(P);
+  var max=Math.max.apply(null,R.parts.map(function(p){return p[1]}))||1;
+  var cap=P.obiettivo==="capitale";
+  var head=cap?'<p class="lead">A '+P.etaPens+' anni il tuo PAC varrà</p><p class="big num" id="cnt">0 €</p><p class="small num">in euro di oggi · caso probabile · sfavorevole '+kk(R.M.p5)+' · versati '+kk(R.M.vers)+'</p>'
+    :'<p class="lead">A '+P.etaPens+' anni, ogni mese, avrai</p><p class="big num" id="cnt">0 €</p><p class="small num">in euro di oggi · caso probabile · sfavorevole '+eur(R.low)+'</p>';
+  function line(e,w){var m=P.rata0*w;return '<div class="etf"><div class="etfh"><b>'+Math.round(w*100)+'%</b><span>'+e.n+'</span></div><small>'+e.isin+' · TER '+e.ter.toLocaleString("it-IT")+'% · circa '+e.px.toLocaleString("it-IT")+' € a quota</small><div class="etfm"><span>'+eur(m)+' al mese</span><span>'+(m>=e.px?"≈ "+Math.floor(m/e.px)+" quote al mese":"1 quota ogni "+Math.ceil(e.px/Math.max(1,m))+" mesi")+'</span></div></div>'}
+  view.innerHTML='<section class="screen">'+topbar('<span class="eyebrow">Il tuo piano è pronto</span>','')+
+    '<div class="reveal">'+head+'</div>'+
+    (cap?"":'<div class="bars" role="img" aria-label="'+R.parts.map(function(p){return p[0]+" "+eur(p[1])}).join(", ")+'">'+R.parts.filter(function(p){return p[1]>=1}).map(function(p){return '<div class="bar"><b class="num">'+Math.round(p[1]).toLocaleString("it-IT")+'</b><i data-h="'+Math.max(6,p[1]/max*160)+'" style="background:'+p[2]+'"></i><span>'+p[0]+'</span></div>'}).join("")+'</div>')+
+    '<p class="eyebrow" style="margin-top:28px">Il tuo portafoglio</p><div class="etfs">'+H.map(function(h){return line(ETF[h[0]],h[1])}).join("")+'</div>'+
+    '<p class="note2">Verifica ISIN, costi e documento KID sul sito dell\'emittente, e che il tuo broker li offra nel PAC senza commissioni. Nei mesi in cui non basta per una quota, la cifra si accumula.</p>'+
+    (R.dedu>0?'<p class="note2">I tuoi versamenti volontari al fondo ti fanno risparmiare circa <b>'+eur(R.dedu)+'</b> di tasse l\'anno.</p>':"")+
+    '<p class="eyebrow" style="margin-top:28px">I consigli per te</p><div class="tips">'+advice(P,R).map(function(a){return '<div class="tip '+a[0]+'"><b>'+a[1]+'</b><span>'+a[2]+'</span></div>'}).join("")+'</div>'+
+    '<div class="rank"><span class="medal">'+(r+1)+'</span><span><b>Grado: '+RANKS[r][1]+'</b><span>'+(cap?"Capitale "+(R.M.p50/Math.max(1,R.M.vers)).toLocaleString("it-IT",{maximumFractionDigits:1})+" volte il versato":"Il "+Math.round(R.tot/R.ultimo*100)+"% del tuo ultimo stipendio stimato")+' · calo tipico lungo la strada '+Math.round(R.M.dd*100)+'%</span></span></div>'+
+    '<div class="cta"><button type="button" class="btn" id="go">Metti alla prova il piano</button><button type="button" class="btn ghost" id="redo">Cambia le risposte</button></div></section>';
+  requestAnimationFrame(function(){view.querySelectorAll(".bar i").forEach(function(i){i.style.height=i.dataset.h+"px"})});
+  var el=document.getElementById("cnt"),end=cap?R.M.p50:R.tot,t0=null,f2=cap?kk:eur;
+  if(REDUCE)el.textContent=f2(end);else requestAnimationFrame(function step(ts){if(!t0)t0=ts;var f=Math.min(1,(ts-t0)/1400);el.textContent=f<1?eur(end*(1-Math.pow(1-f,3))):f2(end);if(f<1&&document.body.contains(el))requestAnimationFrame(step)});
+  addXP(100,"reveal");lset("planDone",true);
+  document.getElementById("go").onclick=function(){buildDeck();st.screen="eventi";render()};
+  document.getElementById("redo").onclick=function(){st.q=0;st.screen="q";render()};
+}
+
+var EVENTS=[
+ {id:"crollo",tag:"MERCATI",when:2,t:"I mercati crollano del 40%",d:"Come nel 2008. Tu continui a versare ogni mese e compri quote a sconto.",on:function(P){P.crolloOn=true;P.crolloAnno=Y0+2},info:"Un calo così capita quasi certamente almeno una volta in 30 anni. Chi vende lo rende definitivo; chi continua a versare recupera prima."},
+ {id:"promo",tag:"LAVORO",when:4,t:"Arriva una promozione",d:"Lo stipendio sale del 15% e resta così.",on:function(P){P.promoOn=true},info:"Uno stipendio più alto alza contributi INPS e TFR: migliora la pensione anche senza toccare il PAC."},
+ {id:"plus",tag:"SCELTA",when:0,t:"Alzi la rata di 50 €",d:"Cinquanta euro in più ogni mese, per tutta la durata del piano.",on:function(P){P.rataPlus+=50},info:"Ogni 10 anni sono 6.000 € versati in più, che crescono insieme al resto."},
+ {id:"lavoro",tag:"LAVORO",when:5,t:"Sei mesi senza stipendio",d:"Un cambio di lavoro o una pausa. Il fondo emergenza fa da cuscinetto.",on:function(P){P.lavoroOn=true},info:"Il fondo emergenza esiste per questo: copre le spese senza vendere il PAC nel momento sbagliato."},
+ {id:"figlio",tag:"FAMIGLIA",when:2,t:"Arriva un figlio in più",d:"Le spese per un figlio fino ai 24 anni, con l'assegno unico.",on:function(P){if(!P.nFigli)P.primoFiglio=Y0+2;P.nFigli=Math.min(3,P.nFigli+1)},can:function(P){return P.nFigli<3},info:"Nell'anno di nascita la rata scende di 100 €. Le spese pesano su quello che ti avanza ogni mese."},
+ {id:"casa",tag:"CASA",when:4,t:"Compri casa",d:"Un mutuo da 400 € al mese e 30.000 € di contanti tra anticipo, notaio e imposte.",on:function(P){P.casaOn=true},can:function(P){return !P.casaOn},info:"I contanti per la casa restano fuori dal PAC: servono entro pochi anni. Dopo l'anticipo dal fondo pensione (75% dopo 8 anni, tassato al 23%) la rendita futura scende."},
+ {id:"ered",tag:"FAMIGLIA",when:19,t:"Erediti una casa da affittare",d:"Una rendita in più: circa 300 € netti al mese.",on:function(P){P.eredOn=true},can:function(P){return !P.eredOn},info:"Un affitto in più si somma alla rendita in pensione. Non entra nel PAC."},
+ {id:"vol",tag:"PREVIDENZA",when:0,t:"Versi 50 € al mese nel fondo pensione",d:"Deducibili dalle tasse; nei fondi negoziali arriva anche il contributo del datore.",on:function(P){if(P.fpTipo==="nessuno"){P.fpTipo="negoziale";P.tfrDove="fondo"}P.volontari+=50},info:"Su 600 € l'anno lo Stato ti restituisce dal 23% al 43% in tasse. Si toglie qualcosa all'avanzo per il PAC."},
+ {id:"fermi",tag:"ECONOMIA",when:0,t:"Gli stipendi restano fermi",d:"Lo stipendio cresce solo con l'inflazione, per tutta la carriera.",on:function(P){P.crescita="ferma"},can:function(P){return P.crescita!=="ferma"},info:"Meno crescita vuol dire meno contributi INPS e meno TFR: la pensione pubblica scende."}
+];
+function metric(R){return P.obiettivo==="capitale"?R.M.p50:R.tot}
+function fmtM(x){return P.obiettivo==="capitale"?kk(x):eur(x)}
+function buildDeck(){st.deck=EVENTS.filter(function(e){return !e.can||e.can(P)}).map(function(e){return e.id});st.di=0;st.cur=metric(plan(P,1200));st.lastD=null;st.info=false}
+function ev(id){return EVENTS.filter(function(e){return e.id===id})[0]}
+function rEventi(){
+  if(!st.deck.length)buildDeck();
+  if(st.di>=st.deck.length){st.screen="missioni";return render()}
+  var e=ev(st.deck[st.di]),now=st.cur,test=clone(P);e.on(test);
+  var after=metric(plan(test,1200)),d=after-now,lab=P.obiettivo==="capitale"?"Capitale a "+P.etaPens+" anni":"Rendita a "+P.etaPens+" anni";
+  view.innerHTML='<section class="screen">'+topbar('<button type="button" class="round" id="back" aria-label="Torna al piano">←</button>','<span class="eyebrow">Evento '+(st.di+1)+' di '+st.deck.length+'</span>')+
+    '<div class="meter"><span>'+lab+'</span><span><b class="num">'+fmtM(now)+'</b>'+(st.lastD!=null?'<span class="delta" style="color:'+(st.lastD>=0?"var(--ok)":"var(--bad)")+'">'+(st.lastD>=0?"+":"−")+fmtM(Math.abs(st.lastD))+'</span>':"")+'</span></div>'+
+    '<div class="deck"><div class="ghostcard" style="left:22px;right:22px;top:22px;bottom:-14px;background:rgba(19,16,38,.6)"></div><div class="ghostcard" style="left:11px;right:11px;top:11px;bottom:-7px;background:rgba(19,16,38,.85)"></div>'+
+    '<article class="ecard" id="card"><span class="stamp yes">SUCCEDE</span><span class="stamp no">NON ORA</span>'+
+    '<div class="tag"><b>'+e.tag+(e.when?" · "+(Y0+e.when):"")+'</b><span>'+(e.when?"tra "+e.when+" anni":"da subito")+'</span></div>'+
+    '<h2>'+e.t+'</h2><p>'+e.d+'</p>'+(st.info?'<p class="explain">'+e.info+'</p>':"")+
+    '<div class="imp"><div><span>'+lab+'</span><b class="num" style="color:'+(d>=0?"var(--ok)":"var(--bad)")+'">'+(d>=0?"+":"−")+fmtM(Math.abs(d))+'</b></div><div><span>Diventerebbe</span><b class="num">'+fmtM(after)+'</b></div></div></article></div>'+
+    '<div class="choicebtns"><button type="button" class="cb" id="no">Non ora</button><button type="button" class="cb info" id="info" aria-label="Spiega meglio" aria-pressed="'+st.info+'">?</button><button type="button" class="cb yes" id="yes">Succede</button></div>'+
+    '<p class="hint">Scorri a destra se succederà, a sinistra se no · +30 XP</p></section>';
+  function decide(yes){var c=document.getElementById("card");c.classList.add("fly");c.style.transform="translateX("+(yes?520:-520)+"px) rotate("+(yes?24:-24)+"deg)";c.style.opacity="0";
+    setTimeout(function(){if(yes){e.on(P);st.lastD=d;st.cur=after}else st.lastD=null;addXP(30,"ev-"+e.id);st.di++;st.info=false;render()},REDUCE?0:300)}
+  document.getElementById("yes").onclick=function(){decide(true)};
+  document.getElementById("no").onclick=function(){decide(false)};
+  document.getElementById("info").onclick=function(){st.info=!st.info;render()};
+  document.getElementById("back").onclick=function(){st.screen="reveal";render()};
+  var c=document.getElementById("card"),sx=null,dx=0;
+  c.addEventListener("pointerdown",function(p){sx=p.clientX;dx=0;c.setPointerCapture(p.pointerId)});
+  c.addEventListener("pointermove",function(p){if(sx==null)return;dx=p.clientX-sx;c.style.transform="translateX("+dx+"px) rotate("+(dx/18-2)+"deg)";
+    c.querySelector(".stamp.yes").style.opacity=Math.max(0,Math.min(1,dx/90));c.querySelector(".stamp.no").style.opacity=Math.max(0,Math.min(1,-dx/90))});
+  function up(){if(sx==null)return;sx=null;if(dx>90)decide(true);else if(dx<-90)decide(false);else{c.classList.add("fly");c.style.transform="rotate(-2deg)";c.querySelectorAll(".stamp").forEach(function(s){s.style.opacity=0});setTimeout(function(){c.classList.remove("fly")},350)}}
+  c.addEventListener("pointerup",up);c.addEventListener("pointercancel",up);
+}
+
+function rMissioni(){
+  var r=rankOf(XP),nx=RANKS[r+1],lo=RANKS[r][0],hi=nx?nx[0]:XP||1;
+  var rows=cash(P),stops=[],K=kids(P),end=Y0+rows.length;
+  var full=rows.filter(function(x){return x.liq>=P.mesiEmerg*x.spese-1})[0];
+  stops.push(["Fondo emergenza pieno",full?full.y:Y0]);
+  if(P.debRata&&P.debFine>=Y0)stops.push(["Fine delle rate",P.debFine+1]);
+  K.forEach(function(b,i){if(b>=Y0)stops.push([(i+1)+"° figlio",b])});
+  if(K.length&&K[K.length-1]+25<end)stops.push(["Figli indipendenti",K[K.length-1]+25]);
+  if(P.casaOn)stops.push(["Casa nuova",P.casaAnno]);
+  stops.push(["Traguardo: "+P.etaPens+" anni",end]);
+  stops.sort(function(a,b){return a[1]-b[1]});
+  var cur=0;stops.forEach(function(s2,i){if(Y0>=s2[1])cur=i});
+  var lessons=LESSONS;
+  view.innerHTML='<section class="screen">'+
+    '<div class="top" style="gap:14px"><span class="medal">'+(r+1)+'</span><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:18px">'+RANKS[r][1]+'</b><span class="xp num" id="xp" style="border:0;padding:0">'+XP+(nx?" / "+nx[0]:"")+' XP</span></div><div class="xpbar"><i style="width:'+(nx?Math.min(100,(XP-lo)/(hi-lo)*100):100)+'%"></i></div></div></div>'+
+    '<p class="eyebrow" style="margin-top:26px">Il tuo percorso · '+rows.length+' anni in '+stops.length+' tappe</p>'+
+    '<div class="path">'+stops.map(function(x,i){var rr=rows.filter(function(r2){return r2.y===x[1]})[0]||rows[rows.length-1];return '<div class="lvl'+(i<cur?" done":i===cur?" now":"")+'"><span class="n">'+(i<cur?"✓":i+1)+'</span><span class="t"><b>'+x[0]+'</b><small>'+x[1]+(i===cur?" · sei qui":"")+'</small></span><span class="r num">'+Math.round(rr.rata)+' €</span></div>'}).join("")+'</div>'+
+    '<p class="eyebrow" style="margin-top:22px">Missioni</p><div style="margin-top:6px">'+MISSIONS.map(function(m){return '<label class="mis"><input type="checkbox" id="m-'+m[0]+'" data-k="'+m[0]+'"'+(DONE[m[0]]?" checked":"")+'><span>'+m[1]+'</span><em>+'+m[2]+'</em></label>'}).join("")+'</div>'+
+    '<p class="eyebrow" style="margin-top:22px">Le lezioni</p><div class="lessons">'+lessons.map(function(l){var ok=QUIZ[l.L]!=null&&QUIZ[l.L]===l.quiz.a;return '<button type="button" class="lesbtn" data-l="'+l.L+'"><span>'+l.t+'</span><em>'+(ok?"✓":"+30")+'</em></button>'}).join("")+'</div>'+
+    '<div class="cta"><div class="row2"><button type="button" class="btn line" id="mine">Il mio piano</button><button type="button" class="btn" id="again">Nuovi eventi</button></div><button type="button" class="btn ghost" id="reset">Ricomincia da zero</button></div></section>';
+  view.querySelectorAll(".mis input").forEach(function(i){i.onchange=function(){var m=MISSIONS.filter(function(x){return x[0]===i.dataset.k})[0];DONE[m[0]]=i.checked;lset("done",DONE);addXP(i.checked?m[2]:-m[2]);rMissioni()}});
+  view.querySelectorAll(".lesbtn").forEach(function(b){b.onclick=function(){st.li=LESSONS.map(function(x){return x.L}).indexOf(b.dataset.l);st.screen="lesson";render()}});
+  document.getElementById("mine").onclick=function(){st.screen="reveal";render()};
+  document.getElementById("again").onclick=function(){buildDeck();st.screen="eventi";render()};
+  document.getElementById("reset").onclick=function(){P=clone(DEF);QUIZ={};lset("quiz",QUIZ);lset("planDone",false);st.q=0;st.screen="home";render()};
+}
+if(st.screen==="eventi")st.screen="reveal";
+render();
+})();
+</script>
+</body>
+</html>
