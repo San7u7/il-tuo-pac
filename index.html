@@ -219,6 +219,7 @@ body{overflow-x:clip}
 .bignum b{display:inline-block;transition:transform .15s var(--ease)}
 .deck{margin-left:4px;margin-right:4px}
 .choicebtns,.hint{width:100%}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
@@ -235,8 +236,8 @@ body{overflow-x:clip}
 document.documentElement.lang="it";
 var REDUCE=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 var Y0=new Date().getFullYear();
-function lget(k,d){try{var x=localStorage.getItem("pac4-"+k);return x?JSON.parse(x):d}catch(e){return d}}
-function lset(k,v){try{localStorage.setItem("pac4-"+k,JSON.stringify(v))}catch(e){}}
+function lget(k,d){try{var x=localStorage.getItem("pac5-"+k);return x?JSON.parse(x):d}catch(e){return d}}
+function lset(k,v){try{localStorage.setItem("pac5-"+k,JSON.stringify(v))}catch(e){}}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function eur(n){return Math.round(n).toLocaleString("it-IT")+" €"}
 function kk(n){return Math.abs(n)>=1e6?(n/1e6).toLocaleString("it-IT",{maximumFractionDigits:2})+" mln €":(Math.round(n/1000)*1000).toLocaleString("it-IT")+" €"}
@@ -256,11 +257,11 @@ var RISK={basso:{core:"allw",sats:["bond"],w:40,scen:"prudente"},medio:{core:"sp
 var FP={nessuno:{l:"Nessuno",r:0},negoziale:{l:"Fondo negoziale",r:.028},aperto:{l:"Fondo aperto",r:.022},pip:{l:"PIP assicurativo",r:.015}};
 var CRESC={ferma:[0,0],normale:[.8,.2],carriera:[1.5,.3]};
 
-var DEF={obiettivo:"entrambi",eta:33,etaPens:67,netto:1800,crescita:"normale",etaSvolta:50,spese:1200,risparmi:6000,mesiEmerg:6,debRata:0,debFine:Y0+2,
-  nFigli:0,primoFiglio:Y0+3,costoFiglio:300,assegno:75,casaOn:false,casaAnno:Y0+4,casaCash:30000,casaRata:400,casaDur:25,
+var DEF={obiettivo:null,eta:30,etaPens:67,netto:1500,crescita:null,etaSvolta:50,spese:1000,risparmi:0,mesiEmerg:6,debRata:0,debFine:Y0+2,
+  nFigli:null,primoFiglio:Y0+3,costoFiglio:350,assegno:75,casaOn:false,casaAnno:Y0+4,casaCash:30000,casaRata:400,casaDur:25,
   rent:0,eredOn:false,eredAnno:Y0+19,eredRent:300,altriInv:0,
-  rata0:150,modoRata:"fasi",rataPlus:0,rischio:"medio",core:"sp",sats:["easia"],satW:20,scen:"base",infl:2,
-  fpTipo:"aperto",tfrDove:"fondo",fondoPos:0,volontari:0,inpsAnni:40,coef:5.0,prelievo:3.5,
+  rata0:100,modoRata:null,rataPlus:0,rischio:null,core:null,sats:[],satW:20,scen:null,infl:2,
+  fpTipo:null,tfrDove:null,fondoPos:0,volontari:0,inpsAnni:38,coef:5.0,prelievo:3.5,
   crolloOn:false,crolloAnno:Y0+2,crolloPct:40,lavoroOn:false,lavoroAnno:Y0+5,lavoroMesi:6,promoOn:false,promoAnno:Y0+4,promoPct:15};
 var RANKS=[[0,"Salvadanaio"],[400,"Risparmiatore"],[800,"Investitore"],[1300,"Stratega"],[2000,"Leggenda del PAC"]];
 var MISSIONS=[["fondo","Completa il fondo emergenza",200],["etf","Controlla sul sito dell'emittente ISIN, costi e documento KID dei tuoi ETF",150],["pac","Attiva il PAC dal tuo broker, possibilmente senza commissioni",200],["inps","Controlla la pensione con «La mia pensione futura» sul sito INPS",150],["fp","Confronta l'ISC del tuo fondo pensione sul sito COVIP",150],["jan","Revisione annuale: rata +2% e controllo dei pesi",150],["hold","Supera un calo senza vendere",300]];
@@ -380,7 +381,7 @@ var STEPS=[
  {L:"rischio",t:"Rischio e tempo",pts:["Le azioni nel lungo periodo hanno battuto l'inflazione, ma lungo la strada possono perdere il 30-50% in pochi mesi.","Più lungo è l'orizzonte, più il tempo assorbe i cali. Sotto i 5 anni le azioni sono una scommessa.","Il vero rischio è vendere durante un crollo: si rende definitiva una perdita che era solo sulla carta."],quiz:{q:"Il mercato scende del 35%. Cosa conviene fare in un PAC lungo?",o:["Vendere tutto","Sospendere","Continuare a versare"],a:2,why:"Le rate comprano più quote a prezzo basso: quando i prezzi risalgono, quelle quote rendono di più."}},
  {k:"rischio",tag:"Il rischio",q:"Quanto rischio sopporti?",sub:"Scegliamo noi un portafoglio di partenza; nei passi dopo puoi cambiarlo.",type:"choice",opts:[["basso","Basso","60% azioni mondiali, 40% titoli di Stato. Cali più piccoli"],["medio","Medio","80% S&P 500, 20% Asia emergente. Il classico"],["alto","Alto","70% S&P 500, 30% semiconduttori. Molte oscillazioni"]],after:function(P){var r=RISK[P.rischio];P.core=r.core;P.sats=r.sats.slice();P.satW=r.w;P.scen=r.scen}},
  {L:"etf",t:"Cos'è un ETF",pts:["Un fondo quotato in Borsa che copia un indice: con una sola quota compri centinaia di aziende.","Ad accumulazione reinveste i dividendi da solo: per un PAC lungo è la scelta più efficiente.","Il costo annuo si chiama TER: 0,07% su 10.000 € sono 7 € l'anno. Scegli ETF «UCITS», cioè conformi alle regole europee."],quiz:{q:"Un ETF con TER 0,03% e 10.000 € investiti. Quanto costa l'anno?",o:["3 €","30 €","300 €"],a:0,why:"0,03% di 10.000 € = 3 €. Un fondo attivo in banca può costare 150-200 € l'anno sulla stessa cifra."}},
- {k:"core",tag:"Scegli i tuoi ETF · 1",q:"Dove vuoi investire la parte principale?",sub:"È il «core»: la parte grande e stabile del PAC. Ti abbiamo già proposto quella adatta al tuo rischio.",type:"choice",opts:[["allw","Tutto il mondo","Circa 2.000 aziende, emergenti comprese: la scelta più diversificata. "+ETF.allw.n+" · TER 0,07%"],["world","I paesi sviluppati","Circa 1.300 aziende: USA, Europa, Giappone. "+ETF.world.n+" · TER 0,12%, quota cara"],["sp","Solo gli Stati Uniti","Le 500 più grandi: storicamente forti, ma un solo paese. "+ETF.sp.n+" · TER 0,03%"]]},
+ {k:"core",tag:"Scegli i tuoi ETF · 1",q:"Dove vuoi investire la parte principale?",sub:"È il «core»: la parte grande e stabile del PAC. È già selezionata quella adatta al rischio che hai scelto: puoi cambiarla.",type:"choice",opts:[["allw","Tutto il mondo","Circa 2.000 aziende, emergenti comprese: la scelta più diversificata. "+ETF.allw.n+" · TER 0,07%"],["world","I paesi sviluppati","Circa 1.300 aziende: USA, Europa, Giappone. "+ETF.world.n+" · TER 0,12%, quota cara"],["sp","Solo gli Stati Uniti","Le 500 più grandi: storicamente forti, ma un solo paese. "+ETF.sp.n+" · TER 0,03%"]]},
  {L:"sat",t:"Core e satellite",pts:["Il core è un indice ampio, la base del portafoglio. Il satellite è una quota piccola su un'area o un tema.","Gli ETF tematici in media rendono meno del mercato: gli studi stimano circa 3 punti l'anno in meno, perché nascono quando il tema è già caro.","Tieni il satellite tra il 10% e il 20%: se va male il danno è limitato."],quiz:{q:"Perché il satellite resta piccolo?",o:["Costa di più","Se il tema delude, pesa poco","Si può comprare solo in piccole quote"],a:1,why:"Un tema può perdere il 50-80%: con il 20% del portafoglio è un colpo sopportabile."}},
  {k:"sats",tag:"Scegli i tuoi ETF · 2",q:"Vuoi aggiungere qualcosa?",sub:"Anche più di una, oppure niente. Ogni scelta è un ETF in più da seguire.",type:"multi",opts:[["easia","Crescita dell'Asia","Chip e tecnologia di Taiwan, Corea, Cina, India. "+ETF.easia.n+" · TER 0,25%"],["semi","Tecnologia e chip","Il tema dell'intelligenza artificiale: molto rischioso. "+ETF.semi.n+" · TER 0,35%"],["bond","Più stabilità","Titoli di Stato dell'area euro: attutiscono i crolli. "+ETF.bond.n+" · TER 0,07%"]]},
  {k:"satW",tag:"Scegli i tuoi ETF · 3",q:"Quanto pesa la parte extra?",sub:"Divisa in parti uguali tra quello che hai aggiunto. Il resto va sulla parte principale.",type:"range",min:5,max:50,step:5,unit:"%",chips:[10,20,30],skip:function(P){return !P.sats.length}},
@@ -423,19 +424,18 @@ function rQ(){
   }
   view.innerHTML='<section class="screen">'+topbar('<button type="button" class="round" id="back" aria-label="'+(st.q?"Passo precedente":"Torna all&#39;inizio")+'">←</button>',dotsFor(L))+
     '<div class="q"><p class="eyebrow">'+S.tag+'</p><h1>'+S.q+'</h1>'+(S.sub?'<p class="sub">'+S.sub+'</p>':"")+'</div>'+body+
-    (st.q?'<div class="preview" id="pv"><em>ANTEPRIMA</em><span>Calcolo…</span></div>':'')+
-    '<div class="cta"><button type="button" class="btn" id="next">'+(st.q<L.length-1?"Avanti · +20 XP":"Scopri il tuo piano")+'</button></div></section>';
+    '<div class="cta"><button type="button" class="btn" id="next"'+(S.type==="choice"&&v==null?" disabled":"")+'>'+(st.q<L.length-1?"Avanti · +20 XP":"Scopri il tuo piano")+'</button></div></section>';
   var rg=document.getElementById("rg");
   function fill(){if(rg)rg.style.setProperty("--p",((rg.value-S.min)/(S.max-S.min)*100)+"%")}
   if(rg){fill();rg.oninput=function(){P[S.k]=+rg.value;document.getElementById("bv").innerHTML=(+rg.value).toLocaleString("it-IT")+'<small>'+S.unit+'</small>';fill();
-    view.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed",+c.dataset.c===P[S.k])});schedulePreview()}}
+    view.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed",+c.dataset.c===P[S.k])});0}}
   view.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){rg.value=c.dataset.c;rg.oninput()}});
   view.querySelectorAll(".choice").forEach(function(c){c.onclick=function(){var val=S.opts.filter(function(x){return String(x[0])===c.dataset.o})[0][0];
     if(S.type==="multi"){var a=P[S.k].slice(),ix=a.indexOf(val);if(ix>=0)a.splice(ix,1);else a.push(val);P[S.k]=a;c.setAttribute("aria-pressed",ix<0)}
-    else{P[S.k]=val;view.querySelectorAll(".choice").forEach(function(x){x.setAttribute("aria-pressed",x===c)})}c.classList.remove("tap");void c.offsetWidth;c.classList.add("tap");schedulePreview()}});
+    else{P[S.k]=val;view.querySelectorAll(".choice").forEach(function(x){x.setAttribute("aria-pressed",x===c)});document.getElementById("next").disabled=false}c.classList.remove("tap");void c.offsetWidth;c.classList.add("tap");0}});
   document.getElementById("back").onclick=function(){if(st.q)st.q--;else st.screen="home";render()};
   document.getElementById("next").onclick=function(){if(S.after)S.after(P);addXP(20,"q-"+S.k);next()};
-  if(st.q)schedulePreview();
+
 }
 function next(){if(st.q<steps().length-1){st.q++;render()}else{st.screen="reveal";render()}}
 function rHome(){
@@ -498,7 +498,7 @@ function rReveal(){
   var cap=P.obiettivo==="capitale";
   var head=cap?'<p class="lead">A '+P.etaPens+' anni il tuo PAC varrà</p><p class="big num" id="cnt">0 €</p><p class="small num">in euro di oggi · caso probabile · sfavorevole '+kk(R.M.p5)+' · versati '+kk(R.M.vers)+'</p>'
     :'<p class="lead">A '+P.etaPens+' anni, ogni mese, avrai</p><p class="big num" id="cnt">0 €</p><p class="small num">in euro di oggi · caso probabile · sfavorevole '+eur(R.low)+'</p>';
-  function line(e,w){var m=P.rata0*w;return '<div class="etf"><div class="etfh"><b>'+Math.round(w*100)+'%</b><span>'+e.n+'</span></div><small>'+e.isin+' · TER '+e.ter.toLocaleString("it-IT")+'% · circa '+e.px.toLocaleString("it-IT")+' € a quota</small><div class="etfm"><span>'+eur(m)+' al mese</span><span>'+(m>=e.px?"≈ "+Math.floor(m/e.px)+" quote al mese":"1 quota ogni "+Math.ceil(e.px/Math.max(1,m))+" mesi")+'</span></div></div>'}
+  function line(e,w){var m=P.rata0*w;return '<div class="etf"><div class="etfh"><b>'+Math.round(w*100)+'%</b><span>'+e.n+'</span></div><small>'+e.isin+' · TER '+e.ter.toLocaleString("it-IT")+'% · circa '+e.px.toLocaleString("it-IT")+' € a quota</small><div class="etfm"><span>'+eur(m)+' al mese</span><span>'+(m>=e.px?"≈ "+Math.floor(m/e.px)+(Math.floor(m/e.px)===1?" quota al mese":" quote al mese"):"1 quota ogni "+Math.ceil(e.px/Math.max(1,m))+" mesi")+'</span></div></div>'}
   view.innerHTML='<section class="screen">'+topbar('<span class="eyebrow">Il tuo piano è pronto</span>','')+
     '<div class="reveal">'+head+'</div>'+
     (cap?"":'<div class="bars" role="img" aria-label="'+R.parts.map(function(p){return p[0]+" "+eur(p[1])}).join(", ")+'">'+R.parts.filter(function(p){return p[1]>=1}).map(function(p){return '<div class="bar"><b class="num">'+Math.round(p[1]).toLocaleString("it-IT")+'</b><i data-h="'+Math.max(6,p[1]/max*160)+'" style="background:'+p[2]+'"></i><span>'+p[0]+'</span></div>'}).join("")+'</div>')+
